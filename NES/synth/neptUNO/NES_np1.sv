@@ -25,11 +25,11 @@ module NES_np1(
 
     // SRAM (IS61WV102416BLL-10TLI)
     output wire [19:0]sram_addr_o  = 20'b00000000000000000000,
-    inout wire  [15:0]sram_data_io   = 8'bzzzzzzzzbzzzzzzzz,
+    inout wire  [15:0]sram_data_io,
     output wire sram_we_n_o     = 1'b1,
     output wire sram_oe_n_o     = 1'b1,
     output wire sram_ub_n_o     = 1'b1,
-	output wire sram_lb_n_o     = 1'b1,
+	 output wire sram_lb_n_o     = 1'b1,
         
     // SDRAM (W9825G6KH-6)
     output [12:0] SDRAM_A,
@@ -88,15 +88,15 @@ module NES_np1(
 
     //inout [31:0] GPIO,
 
-    output LED                    = 1'b1, // '0' is LED on
-	 
-	// SONIDO I2S
-	output SCLK,
-	output LRCLK,
-	output MCLK,
-	output SDIN	 	
+    output LED                    = 1'b1 // '0' is LED on
 );
 
+// SONIDO I2S
+wire SCLK;
+wire LRCLK;
+wire MCLK;
+wire SDIN;
+assign sram_data_io[15:0] = {4'hZ, LRCLK, SDIN, SCLK, MCLK, 8'hZZ};
 
 //---------------------------------------------------------
 //-- MC2+ defaults
