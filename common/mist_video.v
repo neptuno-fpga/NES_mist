@@ -20,6 +20,9 @@ module mist_video
 
     // 0 = HVSync 31KHz, 1 = CSync 15KHz
     input wire       scandoubler_disable,
+	// disable csync without scandoubler
+	input wire       no_csync,
+						   
 
     // Rotate OSD [0] - rotate [1] - left or right
     input wire [1:0] rotate,
@@ -170,11 +173,16 @@ osd #(OSD_X_OFFSET, OSD_Y_OFFSET, OSD_COLOR, OSD_AUTO_CE) osd
     .SPI_DI     ( SPI_DI  ),
     .SPI_SCK    ( SPI_SCK ),
     .SPI_SS3    ( SPI_SS3 ),
-    .R_in       ( SL_R_O ),
-    .G_in       ( SL_G_O ),
-    .B_in       ( SL_B_O ),
-    .HSync      ( SD_HS_O ),
-    .VSync      ( SD_VS_O ),
+    // .R_in       ( SL_R_O ),
+    // .G_in       ( SL_G_O ),
+    // .B_in       ( SL_B_O ),
+    // .HSync      ( SD_HS_O ),
+    // .VSync      ( SD_VS_O ),
+	.R_in    	( scandoubler_disable ? R_full : SD_R_O ),
+	.G_in    	( scandoubler_disable ? G_full : SD_G_O ),
+	.B_in    	( scandoubler_disable ? B_full : SD_B_O ),
+	.HSync   	( scandoubler_disable ? HSync : SD_HS_O ),
+	.VSync   	( scandoubler_disable ? VSync : SD_VS_O ),
     .R_out      ( osd_r_o ),
     .G_out      ( osd_g_o ),
     .B_out      ( osd_b_o ),
@@ -194,9 +202,12 @@ cofi cofi (
     .clk     ( clk_sys ),
     .pix_ce  ( scandoubler_disable ? ce_x1 : ce_x2 ),
     .enable  ( blend   ),
-    .hblank  ( ~(SD_HS_O) ),
-    .hs      ( SD_HS_O ),
-    .vs      ( SD_VS_O ),
+//    .hblank  ( ~(SD_HS_O) ),
+//    .hs      ( SD_HS_O ),
+//    .vs      ( SD_VS_O ),
+	.hblank  ( ~(scandoubler_disable ? HSync : SD_HS_O) ),
+	.hs      ( scandoubler_disable ? HSync : SD_HS_O ),
+	.vs      ( scandoubler_disable ? VSync : SD_VS_O ),
     .red     ( osd_r_o ),
     .green   ( osd_g_o ),
     .blue    ( osd_b_o ),
@@ -237,21 +248,30 @@ patrons patrons_names
     
     .dsp_width     ( dsp_width ),
     .dsp_height    ( dsp_height )
+ 
 );
 
+																															
+																															
+																
+					
 
+assign VGA_R = (!hs || !vs) ? 6'd0 : !patrons ? cofi_r : (patron_pixel[2]) ? { 6{patron_pixel[2]}} : { 2'b00, cofi_r[5:2] };
+assign VGA_G = (!hs || !vs) ? 6'd0 : !patrons ? cofi_g : (patron_pixel[1]) ? { 6{patron_pixel[1]}} : { 2'b00, cofi_g[5:2] };
+assign VGA_B = (!hs || !vs) ? 6'd0 : !patrons ? cofi_b : (patron_pixel[0]) ? { 6{patron_pixel[0]}} : { 2'b00, cofi_b[5:2] };
 
-wire [5:0] vga_r_s = ( !hs || !vs ) ? 6'd0 : !patrons ? cofi_r : (patron_pixel[2]) ? { 6{patron_pixel[2]}} : { 2'b00, cofi_r[5:2] };
-wire [5:0] vga_g_s = ( !hs || !vs ) ? 6'd0 : !patrons ? cofi_g : (patron_pixel[1]) ? { 6{patron_pixel[1]}} : { 2'b00, cofi_g[5:2] };
-wire [5:0] vga_b_s = ( !hs || !vs ) ? 6'd0 : !patrons ? cofi_b : (patron_pixel[0]) ? { 6{patron_pixel[0]}} : { 2'b00, cofi_b[5:2] };
-wire       hs = cofi_hs;
-wire       vs = cofi_vs;
+wire   hs = cofi_hs;
+wire   vs = cofi_vs;
 
+// a minimig vga->scart cable expects a composite sync signal on the VGA_HS output.
+// and VCC on VGA_VS (to switch into rgb mode)
+//assign VGA_HS =  hs;
+//assign VGA_VS =  vs;
+						
 
-assign VGA_R = vga_r_s[5:1];
-assign VGA_G = vga_g_s[5:1];
-assign VGA_B = vga_b_s[5:1];
-assign VGA_HS =  hs;
-assign VGA_VS =  vs;
+// delgrom fix 15khz
+wire   cs = ~(cofi_hs ^ cofi_vs);
+assign VGA_HS = ((~no_csync & scandoubler_disable))? cs : hs;
+assign VGA_VS = ((~no_csync & scandoubler_disable))? 1'b1 : vs;	
 
 endmodule
