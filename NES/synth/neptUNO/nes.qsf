@@ -161,13 +161,7 @@ set_location_assignment PIN_AA16 -to sram_lb_n_o
 #NEPTUNO#
 set_location_assignment PIN_A3 -to AUDIO_L
 set_location_assignment PIN_B4 -to AUDIO_R
-#set_location_assignment PIN_N5 -to mic_o -- No asignado
 set_location_assignment PIN_AA13 -to ear_i
-
-#set_location_assignment PIN_AB16 -to btn_n_i[4]
-#set_location_assignment PIN_AB15 -to btn_n_i[3]
-#set_location_assignment PIN_AB14 -to btn_n_i[2]
-#set_location_assignment PIN_AB13 -to btn_n_i[1]
 
 #NEPTUNO SD/MMC#
 set_location_assignment PIN_D22 -to sd_cs_n_o
@@ -183,7 +177,6 @@ set_location_assignment PIN_N22 -to SPI_SS2
 set_location_assignment PIN_N21 -to SPI_SCK
 set_location_assignment PIN_M21 -to SPI_DO
 set_location_assignment PIN_K22 -to SPI_DI
-#set_location_assignment PIN_R6 -to SPI_nWAIT  -- No asignado
 
 #NEPTUNO#
 set_location_assignment PIN_AA18 -to joy_p7_o
@@ -399,10 +392,9 @@ set_global_assignment -name ENABLE_BOOT_SEL_PIN OFF
 
 set_global_assignment -name DEVICE_FILTER_SPEED_GRADE 8
 set_global_assignment -name SEED 2
+set_global_assignment -name VHDL_FILE audio_i2s.vhd
 set_global_assignment -name VERILOG_FILE joydecoder_2.v
 set_global_assignment -name VHDL_FILE kbd_joystick_ua.vhd
-set_global_assignment -name VERILOG_FILE i2s_audio_out.v
-set_global_assignment -name VERILOG_FILE i2s.v
 set_global_assignment -name SYSTEMVERILOG_FILE ../../src/video.sv
 set_global_assignment -name QIP_FILE ../../../common/mc2.qip
 set_global_assignment -name SYSTEMVERILOG_FILE NES_np1.sv

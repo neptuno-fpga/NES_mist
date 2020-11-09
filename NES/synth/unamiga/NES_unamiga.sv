@@ -474,7 +474,7 @@ video video (
     .b(nes_b)
 );
 
-assign scandoubler_disable = ~status[16] ^ direct_video;
+ 
 
 mist_video #(.COLOR_DEPTH(5), .OSD_COLOR(3'd1), .SD_HCNT_WIDTH(10)) mist_video (
     .clk_sys     ( clk        ),

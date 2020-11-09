@@ -25,11 +25,11 @@ module NES_np1(
 
     // SRAM (IS61WV102416BLL-10TLI)
     output wire [19:0]sram_addr_o  = 20'b00000000000000000000,
-    inout wire  [15:0]sram_data_io,
+    inout wire  [15:0]sram_data_io   = 8'bzzzzzzzzbzzzzzzzz,
     output wire sram_we_n_o     = 1'b1,
     output wire sram_oe_n_o     = 1'b1,
     output wire sram_ub_n_o     = 1'b1,
-	 output wire sram_lb_n_o     = 1'b1,
+	output wire sram_lb_n_o     = 1'b1,
         
     // SDRAM (W9825G6KH-6)
     output [12:0] SDRAM_A,
@@ -89,14 +89,8 @@ module NES_np1(
     //inout [31:0] GPIO,
 
     output LED                    = 1'b1 // '0' is LED on
-);
+	);
 
-// SONIDO I2S
-wire SCLK;
-wire LRCLK;
-wire MCLK;
-wire SDIN;
-assign sram_data_io[15:0] = {4'hZ, LRCLK, SDIN, SCLK, MCLK, 8'hZZ};
 
 //---------------------------------------------------------
 //-- MC2+ defaults
@@ -106,8 +100,20 @@ assign stm_rst_o    = 1'bZ;
 assign stm_rx_o = 1'bZ;
 
 //no SRAM for this core
-assign sram_we_n_o  = 1'b1;
-assign sram_oe_n_o  = 1'b1;
+// i2s sound shared with sram_data_io [11:8]
+wire MCLK;
+wire SCLK;
+wire LRCLK;
+wire SDIN;
+assign sram_we_n_o = 1'b1;
+assign sram_ub_n_o = 1'b1;
+assign sram_lb_n_o = 1'b1;
+assign sram_addr_o = 20'b00000000000000000000;
+assign sram_data_io[15:12] = 4'hZ;
+assign sram_data_io[11:8] = {LRCLK, SDIN, SCLK, MCLK};
+assign sram_data_io[7:0] = 8'hZZ;
+assign sram_oe_n_o = 1'b1;
+assign stm_rst_o = 1'bz;
 
 //all the SD reading goes thru the microcontroller for this core
 assign sd_cs_n_o = 1'bZ;
@@ -224,9 +230,9 @@ wire [7:0] joyB = joy_swap ? core_joy_A : core_joy_B;
 //wire [7:0] nes_joy_A = { joyA[0], joyA[1], joyA[2], joyA[3], joyA[7], joyA[6], joyA[5], joyA[4] } | kbd_joy0;
 //wire [7:0] nes_joy_B = { joyB[0], joyB[1], joyB[2], joyB[3], joyB[7], joyB[6], joyB[5], joyB[4] } | kbd_joy1;
 
-//                         R          L       U        D      START                      SELECT                    B1 (CORRER)       B2 (salto)
-wire [7:0] nes_joy_A = { joyA[0], joyA[1], joyA[2], joyA[3], m_fireE | m_fireG,    joyA[6] | m_fireF    , joyA[4] | joyA[7], joyA[5] | m_fireD};
-wire [7:0] nes_joy_B = { joyB[0], joyB[1], joyB[2], joyB[3], m_fire2E | m_fire2G,  joyB[6] | m_fire2F,    joyB[4] | joyB[7], joyB[5] | m_fire2D};
+//                         R          L       U        D      START       SELECT           B1 (CORRER)       B2 (salto)
+wire [7:0] nes_joy_A = { joyA[0], joyA[1], joyA[2], joyA[3], m_fireG,    joyA[6] | m_fireF    , joyA[4] , joyA[5] };
+wire [7:0] nes_joy_B = { joyB[0], joyB[1], joyB[2], joyB[3], m_fire2G,   joyB[6] | m_fire2F,    joyB[4] , joyB[5] };
 
  
   wire clock_locked;
@@ -557,21 +563,17 @@ sigma_delta_dac sigma_delta_dac (
     .RESET(reset_nes)
 );
 
-// i2s audio
-assign sram_ub_n_o = 1'b1;
-
-i2s_audio_out i2s_audio_out
+//i2s audio
+audio_top i2s
 (
-	.reset       (reset_nes ),
-	.clk         (clock_50_i), //CLOCK_50 o clk_50
-	.sample_rate (1'b0        ), //1=96Khz
-	.left_in     (sample),
-	.right_in    (sample),
-	.i2s_bclk    (SCLK        ),
-	.i2s_lrclk   (LRCLK       ),
-	.i2s_data    (SDIN        )
-   );	
-assign MCLK = clock_50_i; //CLOCK_50 o clk_50
+	.clk_50MHz(clock_50_i),
+	.dac_MCLK (MCLK),
+	.dac_LRCK (LRCLK),
+	.dac_SCLK (SCLK),
+	.dac_SDIN (SDIN),
+	.L_data   (sample),
+	.R_data   (sample)
+);
 
 // /////////
 

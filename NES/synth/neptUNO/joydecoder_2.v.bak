@@ -64,7 +64,7 @@ module joydecoder (
   //assign ena_x = delay_count[3]; //para clk aprox, 4Mhz
   //assign ena_x = delay_count[4]; //para clk aprox, 8Mhz
   //assign ena_x = delay_count[5]; //para clk aprox, 16Mhz
-	assign ena_x = delay_count[3];
+	assign ena_x = delay_count[2];
   
   
   //Gestion de Joystick
