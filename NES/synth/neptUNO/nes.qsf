@@ -158,10 +158,14 @@ set_location_assignment PIN_AA20 -to sram_oe_n_o
 set_location_assignment PIN_R2 -to sram_ub_n_o
 set_location_assignment PIN_AA16 -to sram_lb_n_o
 
-#NEPTUNO#
+#NEPTUNO AUDIO#
 set_location_assignment PIN_A3 -to AUDIO_L
 set_location_assignment PIN_B4 -to AUDIO_R
 set_location_assignment PIN_AA13 -to ear_i
+#NEPTUNO I2S AUDIO#
+set_location_assignment PIN_M20 -to SCLK
+set_location_assignment PIN_AA15 -to SDIN
+set_location_assignment PIN_AB14 -to LRCLK
 
 #NEPTUNO SD/MMC#
 set_location_assignment PIN_D22 -to sd_cs_n_o
